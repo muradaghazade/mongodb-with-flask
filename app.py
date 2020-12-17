@@ -57,6 +57,7 @@ def adduser():
         db.session.commit()
         return jsonify({"success": "success"})
 
+
 @app.route('/api/v1/users', methods=['GET', 'POST'])
 def users():
     if request.method == 'GET':
@@ -64,7 +65,7 @@ def users():
         serialized = [UserSerializer(user).to_dict() for user in users]
         return jsonify(serialized)
     elif request.method == 'POST':
-        first_name = json.loads(request)
+        first_name = request.json['first_name']
         print(first_name)
         users = Person.query.filter_by(first_name=first_name)
         # users = Person.query.all()
