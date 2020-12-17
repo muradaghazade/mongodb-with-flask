@@ -29,24 +29,53 @@ class Person(db.Model):
         self.last_name = last_name
         self.number = number
 
+
+class UserSerializer:
+    def __init__(self, user):
+        self.user = user
+
+
+    def to_dict(self):
+        return collections.OrderedDict([
+            ('id', self.user.id),
+            ('first_name', self.user.first_name),
+            ('last_name', self.user.last_name),
+            ('number', self.user.number)
+        ])
+
+
 @app.route('/api/v1/adduser', methods=['GET', 'POST'])
 def adduser():
     if request.method == 'GET':
         return render_template('index.html')
-        first_name = request.form['firstname']
-        print("aaaaaaaaaaa----"+first_name)
     else:
         first_name = request.form['firstname']
         last_name = request.form['lastname']
         number = request.form['number']
-        print("aaaaaaaaaaa----"+first_name)
         user = Person(first_name, last_name, number)
         db.session.add(user)
         db.session.commit()
         return jsonify({"success": "success"})
 
-# @app.route('/api/v1/users', methods=['GET', 'POST'])
-# def users():
+@app.route('/api/v1/users', methods=['GET', 'POST'])
+def users():
+    if request.method == 'GET':
+        users = Person.query.all()
+        serialized = [UserSerializer(user).to_dict() for user in users]
+        return jsonify(serialized)
+    elif request.method == 'POST':
+        first_name = json.loads(request)
+        print(first_name)
+        users = Person.query.filter_by(first_name=first_name)
+        # users = Person.query.all()
+        print(users)
+        serialized = [UserSerializer(user).to_dict() for user in users]
+        return jsonify(serialized)
+
+
+@app.route('/send-request', methods=['GET', 'POST'])
+def sendrequest():
+    return render_template('request.html')
 
 
 if __name__ == "__main__":
