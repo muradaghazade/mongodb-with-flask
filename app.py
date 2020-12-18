@@ -1,5 +1,6 @@
 from flask import Flask, render_template, url_for, redirect, request, jsonify
-# from flask_mongoengine import MongoEngine
+import pymongo
+from pymongo import MongoClient
 from flask_sqlalchemy import SQLAlchemy
 import collections
 import json
@@ -9,14 +10,10 @@ db = SQLAlchemy(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mydatabase.db'
 db.init_app(app)
 
+cluster = MongoClient('mongodb+srv://muradaghazada:babanene@cluster0.shp15.mongodb.net/test?retryWrites=true&w=majority')
+mdb = cluster['test']
+collection = mdb['test']
 
-# app.config['MONGODB_SETTINGS'] = {
-#     'db': 'my_database',
-#     'host': 'localhost',
-#     'port': 27017
-# }
-# db = MongoEngine()
-# db.init_app(app)
 
 class Person(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -68,7 +65,8 @@ def users():
         first_name = request.json['first_name']
         print(first_name)
         users = Person.query.filter_by(first_name=first_name)
-        # users = Person.query.all()
+        req = {'body': first_name}
+        collection.insert_one(req)
         print(users)
         serialized = [UserSerializer(user).to_dict() for user in users]
         return jsonify(serialized)
